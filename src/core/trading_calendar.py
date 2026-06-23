@@ -36,7 +36,7 @@ except ImportError:
     )
 
 # Market -> exchange code (exchange-calendars)
-MARKET_EXCHANGE = {"cn": "XSHG", "hk": "XHKG", "us": "XNYS", "jp": "XTKS", "kr": "XKRX"}
+MARKET_EXCHANGE = {"cn": "XSHG", "hk": "XHKG", "us": "XNYS", "jp": "XTKS", "kr": "XKRX", "tw": "XTAI"}
 
 # Market -> IANA timezone for "today"
 MARKET_TIMEZONE = {
@@ -45,6 +45,7 @@ MARKET_TIMEZONE = {
     "us": "America/New_York",
     "jp": "Asia/Tokyo",
     "kr": "Asia/Seoul",
+    "tw": "Asia/Taipei",
 }
 
 # P0 market phase baseline (Issue #1386). This is an intentionally small
@@ -133,6 +134,10 @@ def get_market_for_stock(code: str) -> Optional[str]:
         base = code.rsplit(".", 1)[0]
         if base.isdigit() and len(base) == 6:
             return "kr"
+    if code.endswith((".TW", ".TWO")):
+        base = code.rsplit(".", 1)[0]
+        if base.isdigit() and len(base) in (4, 5):
+            return "tw"
     # A-share: 6-digit numeric
     if code.isdigit() and len(code) == 6:
         return "cn"

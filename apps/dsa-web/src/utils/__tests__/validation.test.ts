@@ -20,8 +20,21 @@ describe('stock code validation', () => {
     expect(isObviouslyInvalidStockQuery(input)).toBe(false);
   });
 
-  test.each(['7203', '005930.K', '035720.KRX'])(
-    'does not treat ambiguous JP/KR-like query %s as a valid suffix code',
+  test.each([
+    ['2330.TW', '2330.TW'],
+    ['6488.two', '6488.TWO'],
+    ['00878.tw', '00878.TW'],
+  ])('accepts TW Yahoo suffix code %s', (input, normalized) => {
+    expect(looksLikeStockCode(input)).toBe(true);
+    expect(validateStockCode(input)).toEqual({
+      valid: true,
+      normalized,
+    });
+    expect(isObviouslyInvalidStockQuery(input)).toBe(false);
+  });
+
+  test.each(['7203', '005930.K', '035720.KRX', '2330', '2330.TWX'])(
+    'does not treat ambiguous JP/KR/TW-like query %s as a valid suffix code',
     (input) => {
       const result = validateStockCode(input);
       expect(result.valid).toBe(false);

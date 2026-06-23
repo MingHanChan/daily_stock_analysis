@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - [修复] `main.py --serve-only` 在低配主机上因 uvicorn 在 3.0s 启动自检窗口内才惰性 import 应用（litellm + 整个 app 树）导致超时退出、容器反复重启；改为在计时前于调用线程预先 import app 对象再交给 uvicorn，启动自检不再误杀慢启动。
 - [修复] Docker 镜像预置 efinance 缓存目录（efinance/data）属主给非 root 运行用户 dsa，修复 A 股 efinance 数据源因写 search-cache.json 触发 PermissionError 而每次抓取失败降级的问题。
 - [修复] Docker 部署中 Web 设置页保存自定义 Webhook 模板时自动转义 `$content_json` 等应用占位符，并在运行时还原，避免 Compose 重新部署将其展开为空。
+- [新功能] 新增台湾 suffix-only 个股分析 MVP：手输 `.TW`（TWSE 上市）/ `.TWO`（TPEX 上柜）代码可走 YFinance 日线与近实时行情，补充市场识别、交易日历（`tw: XTAI / Asia/Taipei`）、Prompt 语义与 Web/API 市场类型，当前为需输入完整后缀的 YFinance-only MVP。
+- [改进] Web 股票输入校验与代码规范化、市场标签补齐台股 Yahoo 后缀代码（`2330.TW` / `6488.TWO`），并放开 Portfolio / 决策信号 / 情报市场类型枚举。
+- [测试] 新增台股市场识别、YFinance 行情兜底与路由、Web 输入校验/规范化测试。
+- [文档] 市场支持文档新增台股 suffix-only MVP 支持边界章节，并明确裸代码与名称自动补全为后续增量。
 
 ## [3.23.0] - 2026-06-20
 

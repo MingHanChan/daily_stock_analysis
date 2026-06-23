@@ -40,6 +40,9 @@ def detect_market(stock_code: Optional[str]) -> str:
         return "jp"
     if re.match(r'^\d{6}\.(KS|KQ)$', code):
         return "kr"
+    # Taiwan suffix-only symbols: .TW (TWSE) / .TWO (TPEX), 4-5 digit base.
+    if re.match(r'^\d{4,5}\.TWO?$', code):
+        return "tw"
 
     # US stocks: 1-5 uppercase letters (AAPL, TSLA, GOOGL)
     # Also handles suffixed forms like BRK.B
@@ -72,6 +75,10 @@ _MARKET_ROLES = {
     "kr": {
         "zh": "韩股",
         "en": "Korea stock",
+    },
+    "tw": {
+        "zh": "台股",
+        "en": "Taiwan stock",
     },
 }
 
@@ -124,6 +131,16 @@ _MARKET_GUIDELINES = {
         "en": (
             "- This analysis covers a **Korea stock** (KOSPI/KOSDAQ suffix `.KS` / `.KQ`).\n"
             "- Use Korea-market context: KRW FX, Bank of Korea policy, semiconductor/internet cycles, and local trading rules; do not apply China A-share concepts such as daily price-limit boards, Northbound flows, Dragon Tiger lists, or margin-financing narratives."
+        ),
+    },
+    "tw": {
+        "zh": (
+            "- 本次分析对象为 **台股**（台湾证券交易所 TWSE / 柜买中心 TPEX 上市股票，必须带 `.TW` / `.TWO` 后缀）。\n"
+            "- 请按台湾市场语境分析，关注新台币汇率、台湾央行政策、半导体/电子产业链周期、地缘风险与台股交易制度（T+2 交割、±10% 涨跌幅限制）；不要套用 A 股涨跌停板、北向资金、龙虎榜、融资融券等 A 股专属概念。"
+        ),
+        "en": (
+            "- This analysis covers a **Taiwan stock** (listed on TWSE / TPEX, suffix `.TW` / `.TWO`).\n"
+            "- Use Taiwan-market context: TWD FX, CBC policy, semiconductor/electronics supply-chain cycles, cross-strait geopolitical risk, and local rules (T+2 settlement, ±10% daily price limit); do not apply China A-share concepts such as price-limit boards, Northbound flows, Dragon Tiger lists, or margin-financing narratives."
         ),
     },
 }
