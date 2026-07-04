@@ -112,7 +112,8 @@ def _add_code_lookup(
     lookup.setdefault(candidate, set()).add(canonical)
 
 
-def _is_jp_kr_index_code(code: str) -> bool:
+def _is_yahoo_suffix_index_code(code: str) -> bool:
+    """JP/KR/TW Yahoo suffix-only index entries eligible for bare-code lookup."""
     normalized = str(code or "").strip().upper()
     if "." not in normalized:
         return False
@@ -121,6 +122,8 @@ def _is_jp_kr_index_code(code: str) -> bool:
         return base.isdigit() and len(base) in (4, 5)
     if suffix in {"KS", "KQ"}:
         return base.isdigit() and len(base) == 6
+    if suffix in {"TW", "TWO"}:
+        return base.isdigit() and len(base) in (4, 5)
     return False
 
 
@@ -136,7 +139,7 @@ def _build_stock_code_lookup(raw_items: list) -> Dict[str, str]:
         display_code = str(item[1] or "").strip()
         if not canonical_code:
             continue
-        if not _is_jp_kr_index_code(canonical_code):
+        if not _is_yahoo_suffix_index_code(canonical_code):
             continue
         if len(item) > 8 and item[8] is False:
             continue
@@ -147,7 +150,7 @@ def _build_stock_code_lookup(raw_items: list) -> Dict[str, str]:
         canonical_upper = canonical_code.upper()
         if "." in canonical_upper:
             base, suffix = canonical_upper.rsplit(".", 1)
-            if suffix in {"T", "KS", "KQ"} and base.isdigit():
+            if suffix in {"T", "KS", "KQ", "TW", "TWO"} and base.isdigit():
                 _add_code_lookup(suffix_base_lookup, base, canonical_code)
 
     result: Dict[str, str] = {}

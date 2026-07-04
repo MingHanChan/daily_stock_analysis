@@ -65,6 +65,11 @@ class TestExtractSymbol:
         result = extract_symbol_from_ts_code("005930.KS", "KR")
         assert result == "005930.KS"
 
+    def test_tw_stock_preserves_suffix(self):
+        """测试台股保留 Yahoo 后缀以避免裸代码冲突"""
+        assert extract_symbol_from_ts_code("2330.TW", "TW") == "2330.TW"
+        assert extract_symbol_from_ts_code("6488.TWO", "TW") == "6488.TWO"
+
     def test_empty_ts_code(self):
         """测试空 ts_code"""
         result = extract_symbol_from_ts_code("", "CN")
@@ -138,6 +143,16 @@ class TestDetermineMarket:
         """测试韩股 KOSDAQ Yahoo 后缀"""
         result = determine_market("035720.KQ")
         assert result == "KR"
+
+    def test_tw_twse_stock_with_yahoo_suffix(self):
+        """测试台股 TWSE Yahoo 后缀"""
+        result = determine_market("2330.TW")
+        assert result == "TW"
+
+    def test_tw_tpex_stock_with_yahoo_suffix(self):
+        """测试台股 TPEX（上柜）Yahoo 后缀"""
+        result = determine_market("6488.TWO")
+        assert result == "TW"
 
 
 class TestGetStockName:
@@ -270,6 +285,22 @@ class TestDataCleaning:
         assert result['name'] == '三星电子'
         assert result['market'] == 'KR'
         assert result['aliases'] == ['Samsung', 'Samsung Electronics', '三星']
+
+    def test_valid_tw_stock_with_seed_aliases(self):
+        """测试有效的台股种子记录"""
+        row = {
+            'ts_code': '2330.TW',
+            'name': '台积电',
+            'enname': 'Taiwan Semiconductor Manufacturing Company',
+            'aliases': 'TSMC|台積電'
+        }
+        result = parse_stock_row(row, 'TW')
+        assert result is not None
+        assert result['ts_code'] == '2330.TW'
+        assert result['symbol'] == '2330.TW'
+        assert result['name'] == '台积电'
+        assert result['market'] == 'TW'
+        assert result['aliases'] == ['TSMC', '台積電']
 
     def test_us_dummy_filtered(self):
         """测试美股 DUMMY 记录被过滤"""
@@ -509,25 +540,37 @@ class TestIntegration:
                 'aliases': 'Samsung|三星'
             })
 
+        tw_csv = tmp_path / 'stock_list_tw.csv'
+        with open(tw_csv, 'w', encoding='utf-8-sig', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=['ts_code', 'name', 'enname', 'aliases'])
+            writer.writeheader()
+            writer.writerow({
+                'ts_code': '2330.TW',
+                'name': '台积电',
+                'enname': 'Taiwan Semiconductor Manufacturing Company',
+                'aliases': 'TSMC|台積電'
+            })
+
         # 加载数据
         stocks = load_tushare_data(tmp_path)
 
         # 验证数据
-        assert len(stocks) == 5
+        assert len(stocks) == 6
 
         # 构建索引
         index = build_stock_index(stocks)
 
         # 验证索引
-        assert len(index) == 5
+        assert len(index) == 6
         assert next(item for item in index if item['canonicalCode'] == '7203.T')['aliases'] == ['Toyota', '丰田']
         assert next(item for item in index if item['canonicalCode'] == '005930.KS')['aliases'] == ['Samsung', '三星']
+        assert next(item for item in index if item['canonicalCode'] == '2330.TW')['aliases'] == ['TSMC', '台積電']
 
         # 压缩索引
         compressed = compress_index(index)
 
         # 验证压缩
-        assert len(compressed) == 5
+        assert len(compressed) == 6
 
         # 验证字段数量
         for item in compressed:

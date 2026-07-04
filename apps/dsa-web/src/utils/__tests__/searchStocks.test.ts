@@ -104,6 +104,30 @@ const mockIndex: StockIndexItem[] = [
     popularity: 92,
   },
   {
+    canonicalCode: "2330.TW",
+    displayCode: "2330.TW",
+    nameZh: "台积电",
+    pinyinFull: "taijidian",
+    pinyinAbbr: "tjd",
+    aliases: ["TSMC", "台積電"],
+    market: "TW",
+    assetType: "stock",
+    active: true,
+    popularity: 97,
+  },
+  {
+    canonicalCode: "6488.TWO",
+    displayCode: "6488.TWO",
+    nameZh: "环球晶",
+    pinyinFull: "huanqiujing",
+    pinyinAbbr: "hqj",
+    aliases: ["GlobalWafers", "環球晶圓"],
+    market: "TW",
+    assetType: "stock",
+    active: true,
+    popularity: 92,
+  },
+  {
     canonicalCode: "600000.SH",
     displayCode: "600000",
     nameZh: "浦发银行",
@@ -281,6 +305,48 @@ describe('searchStocks', () => {
     const results = searchStocks('三星', mockIndex);
     expect(results).toHaveLength(1);
     expect(results[0].canonicalCode).toBe('005930.KS');
+  });
+
+  test('台股 TWSE Yahoo 后缀代码匹配', () => {
+    const results = searchStocks('2330.TW', mockIndex);
+    expect(results).toHaveLength(1);
+    expect(results[0].canonicalCode).toBe('2330.TW');
+    expect(results[0].market).toBe('TW');
+  });
+
+  test('台股 TPEX Yahoo 后缀代码匹配', () => {
+    const results = searchStocks('6488.TWO', mockIndex);
+    expect(results).toHaveLength(1);
+    expect(results[0].canonicalCode).toBe('6488.TWO');
+    expect(results[0].market).toBe('TW');
+  });
+
+  test('台股裸代码前缀匹配', () => {
+    const results = searchStocks('2330', mockIndex);
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].canonicalCode).toBe('2330.TW');
+    expect(results[0].matchField).toBe('code');
+  });
+
+  test('台股繁体别名匹配', () => {
+    const results = searchStocks('台積電', mockIndex);
+    expect(results).toHaveLength(1);
+    expect(results[0].canonicalCode).toBe('2330.TW');
+    expect(results[0].matchField).toBe('alias');
+  });
+
+  test('台股简体名称匹配', () => {
+    const results = searchStocks('台积电', mockIndex);
+    expect(results).toHaveLength(1);
+    expect(results[0].canonicalCode).toBe('2330.TW');
+    expect(results[0].matchType).toBe('exact');
+  });
+
+  test('台股英文别名匹配', () => {
+    const results = searchStocks('TSMC', mockIndex);
+    expect(results).toHaveLength(1);
+    expect(results[0].canonicalCode).toBe('2330.TW');
+    expect(results[0].matchField).toBe('alias');
   });
 
   describe('Edge case tests', () => {
