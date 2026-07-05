@@ -1462,23 +1462,23 @@ class StockAnalysisPipeline:
         }
 
     def _get_analysis_context_with_market_fallback(self, code: str) -> Optional[Dict[str, Any]]:
-        """Load analysis context, fetching JP/KR daily bars when DB has no context."""
+        """Load analysis context, fetching JP/KR/TW daily bars when DB has no context."""
         context = self.db.get_analysis_context(code)
         if isinstance(context, dict) and context:
             return context
 
         market = get_market_for_stock(normalize_stock_code(code))
-        if market not in {"jp", "kr"}:
+        if market not in {"jp", "kr", "tw"}:
             return context
 
         try:
             df, source_name = self.fetcher_manager.get_daily_data(code, days=60)
         except Exception as exc:
-            logger.warning("[%s] JP/KR daily fallback fetch failed: %s", code, exc)
+            logger.warning("[%s] JP/KR/TW daily fallback fetch failed: %s", code, exc)
             return context
 
         if df is None or df.empty:
-            logger.warning("[%s] JP/KR daily fallback returned empty data", code)
+            logger.warning("[%s] JP/KR/TW daily fallback returned empty data", code)
             return context
 
         try:

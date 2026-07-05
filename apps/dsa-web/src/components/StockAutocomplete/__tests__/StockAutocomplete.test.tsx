@@ -109,6 +109,16 @@ const jpSuggestion = {
   score: 60,
 };
 
+const twSuggestion = {
+  canonicalCode: "2330.TW",
+  displayCode: "2330.TW",
+  nameZh: "台积电",
+  market: "TW" as const,
+  matchType: "prefix" as const,
+  matchField: "code" as const,
+  score: 80,
+};
+
 describe('StockAutocomplete', () => {
   const mockOnChange = vi.fn();
   const mockOnSubmit = vi.fn();
@@ -517,11 +527,11 @@ describe('StockAutocomplete', () => {
       expect(screen.getByText('000660.KS')).toBeInTheDocument();
     });
 
-    it('renders KR and JP market badges in the suggestion list', () => {
+    it('renders KR, JP and TW market badges in the suggestion list', () => {
       autocompleteHookImpl = () => ({
         query: '',
         setQuery: vi.fn(),
-        suggestions: [krSuggestion, jpSuggestion],
+        suggestions: [krSuggestion, jpSuggestion, twSuggestion],
         isOpen: true,
         highlightedIndex: 0,
         setHighlightedIndex: vi.fn(),
@@ -549,8 +559,10 @@ describe('StockAutocomplete', () => {
 
       expect(screen.getByText('韩股')).toBeInTheDocument();
       expect(screen.getByText('日股')).toBeInTheDocument();
+      expect(screen.getByText('台股')).toBeInTheDocument();
       expect(screen.getByText('000660.KS')).toBeInTheDocument();
       expect(screen.getByText('7203.T')).toBeInTheDocument();
+      expect(screen.getByText('2330.TW')).toBeInTheDocument();
     });
 
     it('falls back to the plain input when the autocomplete tree throws during render', () => {

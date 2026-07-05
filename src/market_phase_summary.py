@@ -129,7 +129,7 @@ def rebuild_market_phase_summary_for_stock_code(
     stock_code: Any,
     context_snapshot: Any,
 ) -> Optional[Dict[str, Any]]:
-    """Rebuild phase summary with derived fields for JP/KR display codes.
+    """Rebuild phase summary with derived fields for JP/KR/TW display codes.
 
     Legacy CN snapshots on JP/KR stock records can retain CN-local values. This
     helper recomputes those derived fields using the target market context while
@@ -140,7 +140,7 @@ def rebuild_market_phase_summary_for_stock_code(
         return None
 
     market = get_market_for_stock(str(stock_code or "").strip())
-    if market not in {"jp", "kr"}:
+    if market not in {"jp", "kr", "tw"}:
         return dict(summary)
 
     phase = str(summary.get("phase", "")).strip()

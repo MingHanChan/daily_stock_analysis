@@ -60,6 +60,13 @@ describe('normalizeStockCode', () => {
     expect(normalizeStockCode('005930')).toBe('005930');
   });
 
+  it('keeps TW Yahoo suffix codes in canonical uppercase suffix form', () => {
+    expect(normalizeStockCode('2330.TW')).toBe('2330.TW');
+    expect(normalizeStockCode('2330.tw')).toBe('2330.TW');
+    expect(normalizeStockCode('6488.two')).toBe('6488.TWO');
+    expect(normalizeStockCode('00878.tw')).toBe('00878.TW');
+  });
+
   it('is case-insensitive for prefixes', () => {
     expect(normalizeStockCode('sh600519')).toBe('600519');
     expect(normalizeStockCode('sz000001')).toBe('000001');
@@ -85,6 +92,8 @@ describe('normalizeStockCode', () => {
     expect(areStockCodesEquivalent('aapl', 'AAPL')).toBe(true);
     expect(areStockCodesEquivalent('7203.t', '7203.T')).toBe(true);
     expect(areStockCodesEquivalent('005930.ks', '005930.KS')).toBe(true);
+    expect(areStockCodesEquivalent('2330.tw', '2330.TW')).toBe(true);
+    expect(areStockCodesEquivalent('6488.two', '6488.TWO')).toBe(true);
     expect(areStockCodesEquivalent('005930', '005930.KS')).toBe(false);
     expect(areStockCodesEquivalent('00700', 'HK01810')).toBe(false);
     expect(areStockCodesEquivalent('', 'HK00700')).toBe(false);

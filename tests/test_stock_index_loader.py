@@ -291,6 +291,70 @@ class TestStockIndexLoader(unittest.TestCase):
                 self.assertIsNone(stock_index_loader.resolve_index_stock_code("005930"))
                 self.assertIsNone(stock_index_loader.resolve_index_stock_code("7203"))
 
+    def test_resolve_index_stock_code_falls_through_to_bundled_tw_pool(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            remote_cache = Path(temp_dir) / "cache" / "stocks.index.json"
+            bundled_path = Path(temp_dir) / "apps" / "stocks.index.json"
+            _write_stock_index(remote_cache, "old remote", size=100)
+            bundled_path.parent.mkdir(parents=True, exist_ok=True)
+            bundled_path.write_text(
+                json.dumps(
+                    [
+                        ["2330.TW", "2330.TW", "台积电", "taijidian", "tjd", ["TSMC", "台積電"], "TW", "stock", True, 100],
+                        ["6488.TWO", "6488.TWO", "环球晶", "huanqiujing", "hqj", [], "TW", "stock", True, 100],
+                    ],
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            os.utime(remote_cache, (2_000, 2_000))
+            os.utime(bundled_path, (1_000, 1_000))
+
+            with patch.object(stock_index_loader, "get_remote_stock_index_cache_path", return_value=remote_cache), \
+                 patch.object(
+                     stock_index_loader,
+                     "get_stock_index_candidate_paths",
+                     return_value=(remote_cache, bundled_path),
+                 ):
+                self.assertEqual(stock_index_loader.resolve_index_stock_code("2330"), "2330.TW")
+                self.assertEqual(stock_index_loader.resolve_index_stock_code("2330.TW"), "2330.TW")
+                self.assertEqual(stock_index_loader.resolve_index_stock_code("6488"), "6488.TWO")
+
+    def test_resolve_index_stock_code_skips_inactive_tw_entries(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bundled_path = Path(temp_dir) / "stocks.index.json"
+            bundled_path.write_text(
+                json.dumps(
+                    [
+                        [
+                            "2330.TW",
+                            "2330.TW",
+                            "台积电",
+                            "taijidian",
+                            "tjd",
+                            [],
+                            "TW",
+                            "stock",
+                            False,
+                            100,
+                        ],
+                    ],
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+
+            with patch.object(
+                stock_index_loader,
+                "get_remote_stock_index_cache_path",
+                return_value=Path(temp_dir) / "missing.json",
+            ), patch.object(
+                stock_index_loader,
+                "get_stock_index_candidate_paths",
+                return_value=(bundled_path,),
+            ):
+                self.assertIsNone(stock_index_loader.resolve_index_stock_code("2330"))
+
 
 if __name__ == "__main__":
     unittest.main()

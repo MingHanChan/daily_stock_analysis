@@ -1416,6 +1416,7 @@ python main.py --serve-only --host 0.0.0.0 --port 8888
 | US stocks | 1-5 letters, optional `.X` suffix | `AAPL`, `TSLA`, `BRK.B` |
 | Japanese stocks | Yahoo `.T` suffix | `7203.T`, `6758.T` |
 | Korean stocks | Yahoo `.KS` / `.KQ` suffix | `005930.KS`, `035720.KQ` |
+| Taiwan stocks | Yahoo `.TW` (TWSE) / `.TWO` (TPEX) suffix | `2330.TW`, `6488.TWO` |
 
 ### Notes
 
